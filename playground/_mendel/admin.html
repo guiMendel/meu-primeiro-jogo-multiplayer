@@ -26,8 +26,9 @@
 
 <div class="container-fluid">
 <div class="row align-items-center justify-content-center">
-    <div class="col-md-3">
-        <h1 class="display-4">Administration granted</h1>
+    <div class="col-md-3 bg-light">
+        <label for="fruit_limit">Fruit limit</label>
+        <input id="fruit_limit" class="form-control" type="number">
     </div>
     <div class="col-md-auto">
         <canvas id="screen"></canvas>
@@ -89,16 +90,17 @@
         console.log(`[network]> Player connected to Client with id: ${playerId}`)
     })
 
-    socket.on('setup', (state) => {
+    socket.on('setup', (setup) => {
         console.log(`[network]> Receiving "setup" from server...`)
-        console.log(state)
+        console.log(setup)
         keyboardListener.registerPlayerId(playerId)
         graphics = createGraphics(forum, document, game, playerId, requestAnimationFrame)
         graphics.renderScreen()
         // Propaga a mensagem pelo forum
         notifyForum({
             type: 'setup_game',
-            new_state: state
+            new_state: setup.state,
+            new_settings: setup.settings
         })
     })
 

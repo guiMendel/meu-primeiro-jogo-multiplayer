@@ -26,16 +26,16 @@ export default function createGame(forum) {
     // armazena as informações do jogo
     const state = {
         players: {},
-        fruits: {},
+        fruits: {}
+    }
+    
+    const settings = {
+        fruitValue: 10,
         fruit_limit: 30,
         screen: {
             width: 15,
             height: 15
         }
-    }
-
-    const settings = {
-        fruitValue: 10
     }
 
     // Carrega o ID do timer que gera as frutas do mapa
@@ -45,16 +45,16 @@ export default function createGame(forum) {
     const acceptedMoves = {
         // Utilizando a função mod, conseguimos implementar map wrap de amneira muito simples
         ArrowUp(player) {
-            player.y = (state.screen.height + player.y - 1) % state.screen.height
+            player.y = (settings.screen.height + player.y - 1) % settings.screen.height
         },
         ArrowDown(player) {
-            player.y = (player.y + 1) % state.screen.height
+            player.y = (player.y + 1) % settings.screen.height
         },
         ArrowLeft(player) {
-            player.x = (state.screen.width + player.x - 1) % state.screen.width
+            player.x = (settings.screen.width + player.x - 1) % settings.screen.width
         },
         ArrowRight(player) {
-            player.x = (player.x + 1) % state.screen.width
+            player.x = (player.x + 1) % settings.screen.width
         }
     }
     // Define os "aliases"
@@ -76,8 +76,8 @@ export default function createGame(forum) {
     function add_player(command) {
         const playerId = command.playerId
         const receivedCoordinates = 'playerX' in command && 'playerY' in command
-        const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * state.screen.width)
-        const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * state.screen.height)
+        const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * settings.screen.width)
+        const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * settings.screen.height)
         // console.log(`> Adding ${playerId} at x:${playerX} y:${playerY}`)
 
         state.players[playerId] = {
@@ -110,13 +110,13 @@ export default function createGame(forum) {
     
     function add_fruit(command) {
         // Verifica se já não estourou o limite de frutas
-        if (Object.keys(state.fruits).length >= state.fruit_limit) {
+        if (Object.keys(state.fruits).length >= settings.fruit_limit) {
             return
         }
         
         const fruitId = command ? command.fruitId : Math.floor(Math.random() * 10000000)
-        let fruitX = command ? command.fruitX : Math.floor(Math.random() * state.screen.width)
-        let fruitY = command ? command.fruitY : Math.floor(Math.random() * state.screen.height)
+        let fruitX = command ? command.fruitX : Math.floor(Math.random() * settings.screen.width)
+        let fruitY = command ? command.fruitY : Math.floor(Math.random() * settings.screen.height)
 
         // Verifica se já existe uma fruta nesse local
         let position_conflict = true
@@ -129,8 +129,8 @@ export default function createGame(forum) {
                     // console.log('[game] Tried spawning fruit in an occupied spot')
                     tries++
                     position_conflict = true
-                    fruitX = Math.floor(Math.random() * state.screen.width)
-                    fruitY = Math.floor(Math.random() * state.screen.height)
+                    fruitX = Math.floor(Math.random() * settings.screen.width)
+                    fruitY = Math.floor(Math.random() * settings.screen.height)
                     break
                 }
             }
@@ -167,7 +167,7 @@ export default function createGame(forum) {
 
     function spawnFruits(frequency = 2000) {
         // Limita o máximo de frutas para o tamanho da tela
-        state.fruit_limit = Math.min(state.fruit_limit, state.screen.width * state.screen.height)
+        settings.fruit_limit = Math.min(settings.fruit_limit, settings.screen.width * settings.screen.height)
         spawnId = setInterval(add_fruit, frequency)
     }
 
@@ -211,6 +211,7 @@ export default function createGame(forum) {
         remove_fruit,
         spawnFruits,
         move_player,
-        state
+        state,
+        settings
     }
 }

@@ -95,16 +95,17 @@
         console.log(`[network]> Player connected to Client with id: ${playerId}`)
     })
 
-    socket.on('setup', (state) => {
+    socket.on('setup', (setup) => {
         console.log(`[network]> Receiving "setup" from server...`)
-        console.log(state)
+        console.log(setup)
         keyboardListener.registerPlayerId(playerId)
         graphics = createGraphics(forum, document, game, playerId, requestAnimationFrame)
         graphics.renderScreen()
         // Propaga a mensagem pelo forum
         notifyForum({
             type: 'setup_game',
-            new_state: state
+            new_state: setup.state,
+            new_settings: setup.settings
         })
     })
 

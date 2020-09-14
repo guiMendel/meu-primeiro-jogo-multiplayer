@@ -22,7 +22,7 @@ const notifyForum = forum.subscribe('server', (command) => {
 
 // Implementação do padrão de projeto: Event Emmiter
 sockets.on('connection', (socket) => {
-    socket.emit('setup', game.state)
+    socket.emit('setup', {state: game.state, settings: game.settings})
     const playerId = socket.id
     console.log(`[server]> Player connected with id: ${playerId}`)
 

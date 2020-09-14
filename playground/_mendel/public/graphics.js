@@ -6,9 +6,9 @@ export default function createGraphics(forum, document, game, playerId, requestA
     // Inscrição no forum
     const respondsTo = {
         setup_game(command) {
-            console.log(`[graphics]> Received new state. ${command.new_state.screen.width} x ${command.new_state.screen.height}`)
-            screen.width = command.new_state.screen.width
-            screen.height = command.new_state.screen.height
+            console.log(`[graphics]> Received new state. ${command.new_settings.screen.width} x ${command.new_settings.screen.height}`)
+            screen.width = command.new_settings.screen.width
+            screen.height = command.new_settings.screen.height
             // Adiciona a lista de pontuação
             for (const playerId in command.new_state.players) {
                 const player = command.new_state.players[playerId]
