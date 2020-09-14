@@ -6,12 +6,16 @@ export default function createGame(forum) {
         setup_game(command) {
             console.log('[game]> Received new state')
             Object.assign(state, command.new_state)
+            Object.assign(settings, command.new_settings)
         },
         player_scored(command) {
             // Será executada do lado do cliente, enviada pelo servidor
             // console.log('[game]> Atualizando pontuação')
             // console.log(command)
             state.players[command.playerId].score = command.new_score
+        },
+        new_fruit_limit(command) {
+            settings.fruit_limit = command.value
         },
         move_player,
         add_player,

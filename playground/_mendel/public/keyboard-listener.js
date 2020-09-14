@@ -7,7 +7,7 @@ export default function createKeyboardListener(forum, document) {
     
     // document é um objeto que implementa EventListener. Essa interface garante um método que permite que ela anuncie objetos do tipo evento. O primeiro argumento especifica qual tipo de evento nós estamos esperando, e o segundo ou um outro objeto que tb implemente EventListener ou uma função.
     document.addEventListener('keydown', handleKeyDown)
-    
+    // 
     function handleKeyDown(event) {
         const keyPressed = event.key
     
