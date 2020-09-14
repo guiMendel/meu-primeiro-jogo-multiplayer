@@ -1,5 +1,6 @@
 import express from 'express'
 import http from 'http'
+import path from 'path'
 import createGame from './public/game.js'
 import socketio from 'socket.io'
 import createForum from './public/integration.js'
@@ -9,7 +10,6 @@ const app = express()
 const server = http.createServer(app)
 const sockets = socketio(server)
 const forum = createForum()
-
 const game = createGame(forum)
 game.spawnFruits()
 
@@ -51,6 +51,30 @@ sockets.on('connection', (socket) => {
         notifyForum(command)
     })
 })
+
+// conexões admin
+// senha de administrador
+const passcode = 135
+app.use(express.urlencoded({ extended: true }))
+// verifica se a senha enviada bate com a configurada. Se sim, o cliente recebe a página de administrador!
+app.post('/', (req, res) => {
+    const __dirname = path.resolve(path.dirname(''));
+    let fileName
+
+    const options = {
+        root: path.join(__dirname),
+    }
+    
+    if (req.body.passcode == passcode) {
+        fileName = 'admin.html'
+    } else {
+        res.append('Warning', 'Invalid passcode')
+        fileName = 'public/index.html'
+    }
+
+    res.sendFile(fileName, options)
+})
+
 
 server.listen(3000, () => {
     console.log('[server]> Server listening on port: 3000')

@@ -7,6 +7,12 @@ export default function createGame(forum) {
             console.log('[game]> Received new state')
             Object.assign(state, command.new_state)
         },
+        player_scored(command) {
+            // Será executada do lado do cliente, enviada pelo servidor
+            // console.log('[game]> Atualizando pontuação')
+            // console.log(command)
+            state.players[command.playerId].score = command.new_score
+        },
         move_player,
         add_player,
         remove_player,
