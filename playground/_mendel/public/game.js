@@ -37,18 +37,18 @@ export default function createGame(forum) {
 
     // Casa o nome da teclas que devem ter funcionalidade com o nome de suas respectivas funções. Aí é só chamar as funções com o próprio nome da tecla!
     const acceptedMoves = {
-        // Utilizando as funções max e min, podemos nos livrar completamente dos ifs. Maravilhoso!
+        // Utilizando a função mod, conseguimos implementar map wrap de amneira muito simples
         ArrowUp(player) {
-            player.y = Math.max(player.y - 1, 0)
+            player.y = (state.screen.height + player.y - 1) % state.screen.height
         },
         ArrowDown(player) {
-            player.y = Math.min(player.y + 1, state.screen.height - 1)
+            player.y = (player.y + 1) % state.screen.height
         },
         ArrowLeft(player) {
-            player.x = Math.max(player.x - 1, 0)
+            player.x = (state.screen.width + player.x - 1) % state.screen.width
         },
         ArrowRight(player) {
-            player.x = Math.min(player.x + 1, state.screen.width - 1)
+            player.x = (player.x + 1) % state.screen.width
         }
     }
     // Define os "aliases"
