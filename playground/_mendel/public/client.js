@@ -3,7 +3,8 @@ import createGame from './game.js'
 import createKeyboardListener from './keyboard-listener.js'
 import createGraphics from './graphics.js'
 import createForum from './integration.js'
-export default function createClient() {
+import createAdmin from './admin.js'
+export default function createClient(document) {
     // sistema central de comunicação entre camadas no front end
     const forum = createForum()
     // camada jogo
@@ -57,12 +58,12 @@ export default function createClient() {
     // console.log(respondsTo)
     const notifyForum = forum.subscribe('network', respondsTo)
     // console.log('[network]> Succesfully subscribed to forum')
-
+    
     socket.on('connect', () => {
         playerId = socket.id
         console.log(`[network]> Player connected to Client with id: ${playerId}`)
     })
-
+    
     socket.on('setup', (setup) => {
         console.log(`[network]> Receiving "setup" from server...`)
         console.log(setup)
@@ -76,7 +77,37 @@ export default function createClient() {
             new_settings: setup.settings
         })
     })
-
+    
+    // Espera pelo preenchimento do campo de senha de acesso
+    const passcode_field = document.getElementById('admin_passcode')
+    const admin_section = document.getElementById('admin_section')
+    let admin
+    if (!passcode_field) {
+        console.log(`[network]> Couldn't access passcode field!`)
+    }
+    passcode_field.addEventListener('change', () => {
+        console.log('[network]> Requesting admin access to server...')
+        socket.emit('access_request', {
+            type: 'access_request',
+            passcode: passcode_field.value
+        })
+    })
+    socket.on('access_granted', (message) => {
+        console.log('[network]> Admin access granted!')
+        // Traduz o html recebido para texto normal
+        const decoder = new TextDecoder()
+        admin_section.innerHTML = decoder.decode(message.data)
+        // Ativa a função de administrador
+        admin = createAdmin({
+            forum,
+            state: game.state,
+            settings: game.settings
+        })
+    })
+    socket.on('access_denied', () => {
+        console.log('[network]> Admin access denied!')
+    })
+    
     for (const event of propagate_to_forum) {
         // console.log(event)
         socket.on(event, (command) => {
@@ -85,12 +116,5 @@ export default function createClient() {
                 notifyForum(command)
             }
         })
-    }
-
-    // Retorna o forum e as configurações, utilizados pelo administrador
-    return {
-        forum,
-        state: game.state,
-        settings: game.settings
     }
 }
