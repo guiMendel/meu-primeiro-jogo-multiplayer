@@ -1,6 +1,6 @@
 // camada de jogo (dados + lógica)
 // Implementação do design pattern: Factory
-export default function createGame(forum) {            
+export default function createGame(forum, server_side = false) {            
     // Interação com o forum
     const respondsTo = {
         setup_game(command) {
@@ -16,6 +16,32 @@ export default function createGame(forum) {
         },
         new_fruit_limit(command) {
             settings.fruit_limit = command.value
+            console.log('[game]> Fruit limit value changed to ' + settings.fruit_limit)
+            if (server_side) {
+                while (Object.keys(state.fruits).length > settings.fruit_limit) {
+                    remove_fruit({fruitId: Object.keys(state.fruits)[0]})
+                }
+            }
+        },
+        new_fruit_frequency(command) {
+            settings.fruit_frequency = command.value
+            console.log('[game]> Fruit frequency value changed to ' + settings.fruit_frequency)
+            if (server_side) {
+                spawnFruits()
+            }
+        },
+        new_fruit_spawn(command) {
+            if (server_side) {
+                if (command.value) {
+                    console.log('[game]> Resumed spawning fruits')
+                    spawnFruits()
+                }
+                else {
+                    console.log('[game]> Stopped spawning fruits')
+                    clearInterval(spawnId)
+                    state.fruit_spawn = false
+                }
+            }
         },
         move_player,
         add_player,
@@ -30,12 +56,14 @@ export default function createGame(forum) {
     // armazena as informações do jogo
     const state = {
         players: {},
-        fruits: {}
+        fruits: {},
+        fruit_spawn: false
     }
     
     const settings = {
         fruitValue: 10,
         fruit_limit: 30,
+        fruit_frequency: 2000,
         screen: {
             width: 15,
             height: 15
@@ -169,10 +197,12 @@ export default function createGame(forum) {
         })
     }
 
-    function spawnFruits(frequency = 2000) {
+    function spawnFruits() {
+        state.fruit_spawn = true
         // Limita o máximo de frutas para o tamanho da tela
+        if (spawnId) clearInterval(spawnId)
         settings.fruit_limit = Math.min(settings.fruit_limit, settings.screen.width * settings.screen.height)
-        spawnId = setInterval(add_fruit, frequency)
+        spawnId = setInterval(add_fruit, settings.fruit_frequency)
     }
 
     function move_player(command) {

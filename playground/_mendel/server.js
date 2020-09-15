@@ -10,7 +10,7 @@ const app = express()
 const server = http.createServer(app)
 const sockets = socketio(server)
 const forum = createForum()
-const game = createGame(forum)
+const game = createGame(forum, true)
 game.spawnFruits()
 
 app.use(express.static('public'))
@@ -38,18 +38,26 @@ sockets.on('connection', (socket) => {
         console.log(`[server]> Player disconnected: ${playerId}`)
     })
 
-    socket.on('move_player', (command) => {
-        // lembrando que a informação que vem do cliente pode ser manipulada. Importante se prevenir!
-        // procedimento banal de segurança
-        command.playerId = playerId
-        command.type = 'move_player'
+    // Define quais eventos, ao serem recebidos, devem ser propagados pelo forum
+    const propagate_events = [
+        'move_player',
+        'new_fruit_limit',
+        'new_fruit_frequency',
+        'new_fruit_spawn'
+    ]
+    for (const event of propagate_events) {
+        // console.log(event)
+        socket.on(event, (command) => {
+            command.playerId = playerId
+            command.type = event
 
-        // Notifica os outros jogadores que este se moveu
-        sockets.emit('move_player', command)
+            // Notifica os outros jogadores deste evento
+            sockets.emit(event, command)
 
-        // Atualiza o estado interno do jogo pelo forum
-        notifyForum(command)
-    })
+            // Atualiza o estado interno do jogo pelo forum
+            notifyForum(command)
+        })
+    }
 })
 
 // conexões admin

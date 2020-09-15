@@ -44,7 +44,7 @@ function subscribe(observerId, observeMethod) {
     function commandFromType(acceptableTypes) {
         return (message) => {
             const commandFunction = acceptableTypes[message.type]
-            if(commandFunction != undefined) {
+            if(commandFunction !== undefined) {
                 commandFunction(message)
             }
         }

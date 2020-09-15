@@ -28,8 +28,21 @@
 <div class="row align-items-center justify-content-center">
     <div class="col-md-3">
         <h1 class="display-4">settings</h1>
-        <label for="fruit_limit">Fruit limit</label>
-        <input id="fruit_limit" class="form-control" type="number">
+
+        <div class="form-group">
+            <label for="fruit_limit">Fruit limit</label>
+            <input id="fruit_limit" class="form-control" type="number">
+        </div>
+
+        <div class="form-group">
+            <label for="fruit_frequency">Fruit frequency</label>
+            <input id="fruit_frequency" class="form-control" type="number">
+        </div>
+
+        <div class="form-check">
+            <input id="fruit_spawn" class="form-check-input" type="checkbox">
+            <label class="form-check-label" for="fruit_spawn">Spawn fruits</label>
+        </div>
     </div>
     <div class="col-md-auto">
         <canvas id="screen"></canvas>
@@ -56,28 +69,73 @@
     import createClient from './client.js'
     const app = createClient()
     // Funções de admin
+
+    // Define as operações do administrador
+    const definitions_list = {
+        fruit_limit,
+        fruit_frequency,
+        fruit_spawn
+    }
+    linkDefinitions()
+
     // Se inscreve no forum
     const respondsTo = {
         setup_game(command) {
             Object.assign(app.state, command.new_state)
             Object.assign(app.settings, command.new_settings)
+            console.log(app)
             updateFields()
+        },
+        new_fruit_limit(command) {
+            app.settings.fruit_limit = command.value
+            updateFields()
+        },
+        new_fruit_frequency(command) {
+            app.settings.fruit_frequency = command.value
+            updateFields()
+        },
+        new_fruit_spawn(command) {
+            app.state.fruit_spawn = command.value
+            updateFields()
+
         }
     }
     const notifyForum = app.forum.subscribe('admin', respondsTo)
 
-    // Define as operações do administrador
-    const fruit_limit = document.getElementById('fruit_limit')
-    fruit_limit.addEventListener('change', (event) => {
-        console.log(`[admin]> Fruit limit changed to ${fruit_limit.value}`)
-        notifyForum({
-            type: 'new_fruit_limit',
-            value: fruit_limit.value
-        })
-    })
+
+    function linkDefinitions() {
+        // Pega os elementos do documento especificados pela lista, armazena eles e cria um listener para o evento 'change'
+        for (const definition in definitions_list) {
+            const element = document.getElementById(definition)
+            definitions_list[definition] = element
+
+            element.addEventListener('change', (event) => {
+                // Determina o que enviar no campo valor
+                let value
+                if (element.getAttribute('type') == 'checkbox') {
+                    value = element.checked
+                } else {
+                    value = element.value
+                }
+                console.log(`[admin]> Update ${definition} value to ${value}`)
+                notifyForum({
+                    type: 'new_' + definition,
+                    value
+                })
+            })
+        }
+    }
 
     function updateFields() {
-        fruit_limit.value = app.settings.fruit_limit
+        for (const definition in definitions_list) {
+            const element = definitions_list[definition]
+            if (element.getAttribute('type') == 'checkbox') {
+                element.checked = app.settings[definition] ?? app.state[definition]
+                console.log(app.state[definition])
+            } else {
+                element.value = app.settings[definition] ?? app.state[definition]
+            }
+        }
     }
 
 </script>

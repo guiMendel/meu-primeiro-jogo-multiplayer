@@ -15,6 +15,25 @@ export default function createClient() {
     let playerId
     // camada apresentação
     let graphics
+
+    // Define quais eventos, ao serem recebidos do servidor, devem ser propagados pelo forum
+    const propagate_to_forum = [
+        'add_player',
+        'remove_player',
+        'move_player',
+        'add_fruit',
+        'remove_fruit',
+        'player_scored',
+        'new_fruit_limit',
+        'new_fruit_frequency',
+        'new_fruit_spawn'
+    ]
+    // Define quais mensagens recebidas pelo forum devem ser transmitidas ao servidor
+    const transmit_to_server = [
+        'new_fruit_limit',
+        'new_fruit_frequency',
+        'new_fruit_spawn'
+    ]
     
     const respondsTo = {
         // Envia o movimento para o servidor
@@ -27,6 +46,15 @@ export default function createClient() {
             }
         }
     }
+    // Adiciona as transmissões definidas pela lista
+    for (const message of transmit_to_server) {
+        respondsTo[message] = (command) => {
+            // console.log(`[network]> Emmiting command ${message} to server`)
+            command['sourceId'] = playerId
+            socket.emit(command.type, command)
+        }
+    }
+    // console.log(respondsTo)
     const notifyForum = forum.subscribe('network', respondsTo)
     // console.log('[network]> Succesfully subscribed to forum')
 
@@ -49,16 +77,7 @@ export default function createClient() {
         })
     })
 
-    // Define quais eventos, ao serem recebidos, devem ser propagados pelo forum
-    const propagate_events = [
-        'add_player',
-        'remove_player',
-        'move_player',
-        'add_fruit',
-        'remove_fruit',
-        'player_scored'
-    ]
-    for (const event of propagate_events) {
+    for (const event of propagate_to_forum) {
         // console.log(event)
         socket.on(event, (command) => {
             // console.log(`[network]> Propagating event ${event}`)
