@@ -2,7 +2,7 @@ export default function createAdmin(app) {
     // Define as operações do administrador
     const element_list = {
         fruit_limit,
-        fruit_frequency,
+        fruit_spawnFrequency,
         fruit_spawn
     }
     linkDefinitions()
@@ -16,15 +16,15 @@ export default function createAdmin(app) {
             updateFields()
         },
         new_fruit_limit(command) {
-            app.settings.fruit_limit = command.value
+            app.settings.fruit.limit = command.value
             updateFields()
         },
-        new_fruit_frequency(command) {
-            app.settings.fruit_frequency = command.value
+        new_fruit_spawnFrequency(command) {
+            app.settings.fruit.frequency = command.value
             updateFields()
         },
         new_fruit_spawn(command) {
-            app.state.fruit_spawn = command.value
+            app.state.fruit.spawnFrequency = command.value
             updateFields()
 
         }
@@ -60,11 +60,11 @@ export default function createAdmin(app) {
     function updateFields() {
         for (const definition in element_list) {
             const element = element_list[definition]
+            // console.log(app)
             if (element.getAttribute('type') == 'checkbox') {
-                element.checked = app.settings[definition] ?? app.state[definition]
-                console.log(app.state[definition])
+                element.checked = app.settings.get(definition) ?? app.state[definition]
             } else {
-                element.value = app.settings[definition] ?? app.state[definition]
+                element.value = app.settings.get(definition) ?? app.state[definition]
             }
         }
     }

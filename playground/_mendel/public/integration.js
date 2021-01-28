@@ -3,15 +3,15 @@ export default function createForum() {
 
     // Implementação do design pattern: Observer
     // O que isso faz, em termos abstratos, é criar uma lista de observadores. Todos são notificados sempre que um deles invoca a função notifyAll. Os elementos do jogo vão se "inscrever" nesse forum, o que significa adicionar uma função à lista (ou um objeto que funciona para traduzir um nome de tipo de evento firetamente para uma funcionaldiade). Quem se inscreve pode enviar mensagens e receber mensagens
-function subscribe(observerId, observeMethod) {
+    function subscribe(observerId, observeMethod, silent=false) {
         // Inscreve um observer e lhe fornece o canal para emitir suas próprias mensagens
         // Se receber um objeto em vez de função, trata como dicionário de tipo para funcionalidade
         if (typeof observeMethod === 'object') {
-            console.log(`[forum]> Observer "${observerId}" subscribed to forum using a type dictionary`)
-            observers[observerId] = commandFromType(observeMethod)  
+            if (!silent) console.log(`[forum]> Observer "${observerId}" subscribed to forum using a type dictionary`)
+            observers[observerId] = commandFromType(observeMethod)
         }
         else {
-            console.log(`[forum]> Observer "${observerId}" subscribed to forum using a custom function `)
+            if (!silent) console.log(`[forum]> Observer "${observerId}" subscribed to forum using a custom function `)
             observers[observerId] = observeMethod
         }
 
@@ -20,7 +20,8 @@ function subscribe(observerId, observeMethod) {
         }
     }
 
-    function unsubscribe(observerId) {
+    function unsubscribe(observerId, silent=false) {
+        if (!silent) console.log(`[forum]> Observer "${observerId}" unsubscribed from forum`)
         delete observers[observerId]
     }
 
@@ -28,7 +29,7 @@ function subscribe(observerId, observeMethod) {
         // console.log(`[forum]> Observer "${emitterId}" emitting to ${Object.keys(observers).length - 1} observers`)
         // Adiciona o emissor na mensagem
         message['emitter'] = emitterId
-        
+
         for (const observerId in observers) {
             if (emitterId === observerId) continue
             observers[observerId](message)
@@ -44,7 +45,7 @@ function subscribe(observerId, observeMethod) {
     function commandFromType(acceptableTypes) {
         return (message) => {
             const commandFunction = acceptableTypes[message.type]
-            if(commandFunction !== undefined) {
+            if (commandFunction !== undefined) {
                 commandFunction(message)
             }
         }

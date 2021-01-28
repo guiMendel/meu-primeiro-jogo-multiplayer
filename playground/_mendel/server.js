@@ -28,7 +28,7 @@ const propagate_events = [
 // Quais somente devem ser propagados se recebidos por um admin
 const propagate_admin_events = [
     'new_fruit_limit',
-    'new_fruit_frequency',
+    'new_fruit_spawnFrequency',
     'new_fruit_spawn'
 ]
 // Senha para acesso como administrador

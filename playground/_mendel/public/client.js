@@ -26,13 +26,13 @@ export default function createClient(document) {
         'remove_fruit',
         'player_scored',
         'new_fruit_limit',
-        'new_fruit_frequency',
+        'new_fruit_spawnFrequency',
         'new_fruit_spawn'
     ]
     // Define quais mensagens recebidas pelo forum devem ser transmitidas ao servidor
     const transmit_to_server = [
         'new_fruit_limit',
-        'new_fruit_frequency',
+        'new_fruit_spawnFrequency',
         'new_fruit_spawn'
     ]
 
@@ -95,6 +95,11 @@ export default function createClient(document) {
         })
     })
     socket.on('access_granted', (message) => {
+        if (admin) {
+            console.log('[network]> Admin access was already granted.')
+            return
+
+        }
         console.log('[network]> Admin access granted!')
         // Traduz o html recebido para texto normal
         const decoder = new TextDecoder()

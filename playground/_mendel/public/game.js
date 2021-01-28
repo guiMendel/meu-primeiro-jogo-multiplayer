@@ -1,7 +1,7 @@
 // camada de jogo (dados + lógica)
 import createFruit from './entities/fruit.js'
 // Implementação do design pattern: Factory
-export default function createGame(forum, server_side = false) {            
+export default function createGame(forum, server_side = false) {
     // Interação com o forum
     const respondsTo = {
         setup_game(command) {
@@ -16,17 +16,17 @@ export default function createGame(forum, server_side = false) {
             state.players[command.playerId].score = command.new_score
         },
         new_fruit_limit(command) {
-            settings.fruit_limit = command.value
-            console.log('[game]> Fruit limit value changed to ' + settings.fruit_limit)
+            settings.fruit.limit = command.value
+            console.log('[game]> Fruit limit value changed to ' + settings.fruit.limit)
             if (server_side) {
-                while (Object.keys(state.fruits).length > settings.fruit_limit) {
-                    remove_fruit({fruitId: Object.keys(state.fruits)[0]})
+                while (Object.keys(state.fruits).length > settings.fruit.limit) {
+                    remove_fruit({ fruitId: Object.keys(state.fruits)[0] })
                 }
             }
         },
-        new_fruit_frequency(command) {
-            settings.fruit_frequency = command.value
-            console.log('[game]> Fruit frequency value changed to ' + settings.fruit_frequency)
+        new_fruit_spawnFrequency(command) {
+            settings.fruit.spawnFrequency = command.value
+            console.log('[game]> Fruit frequency value changed to ' + settings.fruit.spawnFrequency)
             if (server_side) {
                 spawnFruits()
             }
@@ -60,11 +60,26 @@ export default function createGame(forum, server_side = false) {
         fruits: {},
         fruit_spawn: false
     }
-    
+
     const settings = {
-        fruitValue: 10,
-        fruit_limit: 30,
-        fruit_frequency: 2000,
+        // Metodo que retorna a configuracao numa sintaxe de underscore em vez de pontos
+        get(setting) {
+            // Pega os campos numa lista
+            const fields = setting.split('_')
+            // Inicia a variavel de coleta com o proprio objeto settings
+            let result = this
+            // Vai entrando em cada campo
+            for (const field of fields) {
+                result = result[field]
+            }
+            return result
+        },
+        fruit: {
+            value: 10,
+            limit: 30,
+            moveFrequency: 500,
+            spawnFrequency: 2000,
+        },
         screen: {
             width: 15,
             height: 15
@@ -92,16 +107,16 @@ export default function createGame(forum, server_side = false) {
     }
     // Define os "aliases"
     Object.assign(acceptedMoves, {
-        w (player) {
+        w(player) {
             acceptedMoves.ArrowUp(player)
         },
-        a (player) {
+        a(player) {
             acceptedMoves.ArrowLeft(player)
         },
-        s (player) {
+        s(player) {
             acceptedMoves.ArrowDown(player)
         },
-        d (player) {
+        d(player) {
             acceptedMoves.ArrowRight(player)
         }
     })
@@ -130,7 +145,7 @@ export default function createGame(forum, server_side = false) {
             })
         }
     }
-    
+
     function remove_player(command) {
         const playerId = command.playerId
         delete state.players[playerId]
@@ -140,13 +155,13 @@ export default function createGame(forum, server_side = false) {
             playerId,
         })
     }
-    
+
     function add_fruit(command) {
         // Verifica se já não estourou o limite de frutas
-        if (Object.keys(state.fruits).length >= settings.fruit_limit) {
+        if (Object.keys(state.fruits).length >= settings.fruit.limit) {
             return
         }
-        
+
         const fruitId = command ? command.fruitId : Math.floor(Math.random() * 10000000)
         let fruitX = command ? command.fruitX : Math.floor(Math.random() * settings.screen.width)
         let fruitY = command ? command.fruitY : Math.floor(Math.random() * settings.screen.height)
@@ -156,7 +171,7 @@ export default function createGame(forum, server_side = false) {
         let tries = 0
         while (position_conflict && tries < 5) {
             position_conflict = false
-            for (const id in {...state.fruits, ...state.players}) {
+            for (const id in { ...state.fruits, ...state.players }) {
                 const entity = state.fruits[id] ?? state.players[id]
                 if (fruitX == entity.x && fruitY == entity.y) {
                     // console.log('[game] Tried spawning fruit in an occupied spot')
@@ -174,13 +189,7 @@ export default function createGame(forum, server_side = false) {
 
         // console.log(`[game]> Adding fruit ${fruitId} at x:${fruitX} y:${fruitY}`)
 
-        
-        
-        state.fruits[fruitId] = {
-            fruitId,
-            x: fruitX,
-            y: fruitY
-        }
+        state.fruits[fruitId] = createFruit(fruitId, fruitX, fruitY, forum, server_side)
 
         notifyForum({
             type: 'add_fruit',
@@ -204,8 +213,8 @@ export default function createGame(forum, server_side = false) {
         state.fruit_spawn = true
         // Limita o máximo de frutas para o tamanho da tela
         if (spawnId) clearInterval(spawnId)
-        settings.fruit_limit = Math.min(settings.fruit_limit, settings.screen.width * settings.screen.height)
-        spawnId = setInterval(add_fruit, settings.fruit_frequency)
+        settings.fruit.limit = Math.min(settings.fruit.limit, settings.screen.width * settings.screen.height)
+        spawnId = setInterval(add_fruit, settings.fruit.spawnFrequency)
     }
 
     function move_player(command) {
@@ -229,8 +238,8 @@ export default function createGame(forum, server_side = false) {
             // console.log(`> Verifying collision between ${playerId} and ${fruitId}...`)
             if (player.x === fruit.x && player.y === fruit.y) {
                 // console.log(`> Collision detected!`)
-                player.score += settings.fruitValue
-                remove_fruit( {fruitId} )
+                remove_fruit({ fruitId })
+                player.score += settings.fruit.value
                 notifyForum({
                     type: 'player_scored',
                     playerId,
