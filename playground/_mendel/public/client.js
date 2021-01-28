@@ -35,7 +35,7 @@ export default function createClient(document) {
         'new_fruit_frequency',
         'new_fruit_spawn'
     ]
-    
+
     const respondsTo = {
         // Envia o movimento para o servidor
         move_player(command) {
@@ -58,12 +58,12 @@ export default function createClient(document) {
     // console.log(respondsTo)
     const notifyForum = forum.subscribe('network', respondsTo)
     // console.log('[network]> Succesfully subscribed to forum')
-    
+
     socket.on('connect', () => {
         playerId = socket.id
         console.log(`[network]> Player connected to Client with id: ${playerId}`)
     })
-    
+
     socket.on('setup', (setup) => {
         console.log(`[network]> Receiving "setup" from server...`)
         console.log(setup)
@@ -77,19 +77,21 @@ export default function createClient(document) {
             new_settings: setup.settings
         })
     })
-    
+
     // Espera pelo preenchimento do campo de senha de acesso
     const passcode_field = document.getElementById('admin_passcode')
     const admin_section = document.getElementById('admin_section')
-    let admin
+    let admin = null
+    let adminPasscode
     if (!passcode_field) {
         console.log(`[network]> Couldn't access passcode field!`)
     }
     passcode_field.addEventListener('change', () => {
+        adminPasscode = passcode_field.value
         console.log('[network]> Requesting admin access to server...')
         socket.emit('access_request', {
             type: 'access_request',
-            passcode: passcode_field.value
+            passcode: adminPasscode
         })
     })
     socket.on('access_granted', (message) => {
@@ -103,11 +105,33 @@ export default function createClient(document) {
             state: game.state,
             settings: game.settings
         })
+
+        // Quando desconectar, reseta a pagina
+        let reconnecting = false
+        socket.on('disconnect', () => {
+            if (reconnecting) return
+            reconnecting = true
+            console.log('[network]> Reconnecting...')
+            alert('Server restarted.\nRequesting admin with same passcode...')
+
+            socket.emit('access_request', {
+                type: 'access_request',
+                passcode: adminPasscode
+            })
+            socket.on('access_denied', () => {
+                console.log('[network]> Admin access denied!')
+                location.reload()
+            })
+
+            reconnecting = false
+
+        })
+
     })
     socket.on('access_denied', () => {
         console.log('[network]> Admin access denied!')
     })
-    
+
     for (const event of propagate_to_forum) {
         // console.log(event)
         socket.on(event, (command) => {

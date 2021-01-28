@@ -36,7 +36,7 @@ const passcode = 135
 
 // Implementação do padrão de projeto: Event Emmiter
 sockets.on('connection', (socket) => {
-    socket.emit('setup', {state: game.state, settings: game.settings})
+    socket.emit('setup', { state: game.state, settings: game.settings })
     const playerId = socket.id
     let admin = false
     console.log(`[server]> Player connected with id: ${playerId}`)
@@ -44,7 +44,7 @@ sockets.on('connection', (socket) => {
     notifyForum({ type: 'add_player', playerId })
     // game.addPlayer( {playerId: playerId} )
     // console.log(game.state)
-    
+
     socket.on('disconnect', (socket) => {
         notifyForum({
             type: 'remove_player',
@@ -56,6 +56,12 @@ sockets.on('connection', (socket) => {
     // Espera pela tentativa de acesso do administrador
     socket.on('access_request', (message) => {
         console.log(`[server]> Player ${playerId} requesting admin access...`)
+        // Ve se ja e admin
+        if (admin) {
+            socket.emit('access_granted')
+            console.log(`[server]> Player ${playerId} is already an admin`)
+            return
+        }
         if (message.passcode == passcode) {
             console.log(`[server]> Passcode is correct. Granting admin access to player ${playerId}`)
             // Lê o arquivo que contém as funções de admin
@@ -63,7 +69,7 @@ sockets.on('connection', (socket) => {
                 if (error) {
                     console.log('[server]> ERROR: Failed to load admin file!')
                 } else {
-                    socket.emit('access_granted', {data})
+                    socket.emit('access_granted', { data })
                     admin = true
                     enableAdminPrivilege(socket, playerId)
                 }
@@ -73,7 +79,7 @@ sockets.on('connection', (socket) => {
             console.log(`[server]> Passcode is incorrect. Admin access denied to player ${playerId}`)
         }
     })
-// 
+    // 
     for (const event of propagate_events) {
         // console.log(event)
         socket.on(event, (command) => {

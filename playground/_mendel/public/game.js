@@ -1,4 +1,5 @@
 // camada de jogo (dados + lógica)
+import createFruit from './entities/fruit.js'
 // Implementação do design pattern: Factory
 export default function createGame(forum, server_side = false) {            
     // Interação com o forum
@@ -173,6 +174,8 @@ export default function createGame(forum, server_side = false) {
 
         // console.log(`[game]> Adding fruit ${fruitId} at x:${fruitX} y:${fruitY}`)
 
+        
+        
         state.fruits[fruitId] = {
             fruitId,
             x: fruitX,
