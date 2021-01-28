@@ -31,7 +31,7 @@ export default function createGame(forum, server_side = false) {
                 spawnFruits()
             }
         },
-        new_fruit_spawn(command) {
+        new_fruit_spawning(command) {
             if (server_side) {
                 if (command.value) {
                     console.log('[game]> Resumed spawning fruits')
@@ -40,7 +40,7 @@ export default function createGame(forum, server_side = false) {
                 else {
                     console.log('[game]> Stopped spawning fruits')
                     clearInterval(spawnId)
-                    state.fruit_spawn = false
+                    settings.fruit.spawning = false
                 }
             }
         },
@@ -58,10 +58,10 @@ export default function createGame(forum, server_side = false) {
     const state = {
         players: {},
         fruits: {},
-        fruit_spawn: false
     }
 
     const settings = {
+        // Atributos (e seus filhos) que comecam com _ nao sao alteraveis pelos admins
         // Metodo que retorna a configuracao numa sintaxe de underscore em vez de pontos
         get(setting) {
             // Pega os campos numa lista
@@ -75,12 +75,13 @@ export default function createGame(forum, server_side = false) {
             return result
         },
         fruit: {
+            spawning: true,
             value: 10,
             limit: 30,
             moveFrequency: 500,
             spawnFrequency: 2000,
         },
-        screen: {
+        _screen: {
             width: 15,
             height: 15
         }
@@ -93,16 +94,16 @@ export default function createGame(forum, server_side = false) {
     const acceptedMoves = {
         // Utilizando a função mod, conseguimos implementar map wrap de amneira muito simples
         ArrowUp(player) {
-            player.y = (settings.screen.height + player.y - 1) % settings.screen.height
+            player.y = (settings._screen.height + player.y - 1) % settings._screen.height
         },
         ArrowDown(player) {
-            player.y = (player.y + 1) % settings.screen.height
+            player.y = (player.y + 1) % settings._screen.height
         },
         ArrowLeft(player) {
-            player.x = (settings.screen.width + player.x - 1) % settings.screen.width
+            player.x = (settings._screen.width + player.x - 1) % settings._screen.width
         },
         ArrowRight(player) {
-            player.x = (player.x + 1) % settings.screen.width
+            player.x = (player.x + 1) % settings._screen.width
         }
     }
     // Define os "aliases"
@@ -124,8 +125,8 @@ export default function createGame(forum, server_side = false) {
     function add_player(command) {
         const playerId = command.playerId
         const receivedCoordinates = 'playerX' in command && 'playerY' in command
-        const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * settings.screen.width)
-        const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * settings.screen.height)
+        const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * settings._screen.width)
+        const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * settings._screen.height)
         // console.log(`> Adding ${playerId} at x:${playerX} y:${playerY}`)
 
         state.players[playerId] = {
@@ -163,8 +164,8 @@ export default function createGame(forum, server_side = false) {
         }
 
         const fruitId = command ? command.fruitId : Math.floor(Math.random() * 10000000)
-        let fruitX = command ? command.fruitX : Math.floor(Math.random() * settings.screen.width)
-        let fruitY = command ? command.fruitY : Math.floor(Math.random() * settings.screen.height)
+        let fruitX = command ? command.fruitX : Math.floor(Math.random() * settings._screen.width)
+        let fruitY = command ? command.fruitY : Math.floor(Math.random() * settings._screen.height)
 
         // Verifica se já existe uma fruta nesse local
         let position_conflict = true
@@ -177,8 +178,8 @@ export default function createGame(forum, server_side = false) {
                     // console.log('[game] Tried spawning fruit in an occupied spot')
                     tries++
                     position_conflict = true
-                    fruitX = Math.floor(Math.random() * settings.screen.width)
-                    fruitY = Math.floor(Math.random() * settings.screen.height)
+                    fruitX = Math.floor(Math.random() * settings._screen.width)
+                    fruitY = Math.floor(Math.random() * settings._screen.height)
                     break
                 }
             }
@@ -210,10 +211,10 @@ export default function createGame(forum, server_side = false) {
     }
 
     function spawnFruits() {
-        state.fruit_spawn = true
+        settings.fruit.spawning = true
         // Limita o máximo de frutas para o tamanho da tela
         if (spawnId) clearInterval(spawnId)
-        settings.fruit.limit = Math.min(settings.fruit.limit, settings.screen.width * settings.screen.height)
+        settings.fruit.limit = Math.min(settings.fruit.limit, settings._screen.width * settings._screen.height)
         spawnId = setInterval(add_fruit, settings.fruit.spawnFrequency)
     }
 

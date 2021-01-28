@@ -7,8 +7,8 @@ export default function createGraphics(forum, document, game, playerId, requestA
     const respondsTo = {
         setup_game(command) {
             // console.log(`[graphics]> Received new state. ${command.new_settings.screen.width} x ${command.new_settings.screen.height}`)
-            screen.width = command.new_settings.screen.width
-            screen.height = command.new_settings.screen.height
+            screen.width = command.new_settings._screen.width
+            screen.height = command.new_settings._screen.height
             // Adiciona a lista de pontuação
             for (const playerId in command.new_state.players) {
                 const player = command.new_state.players[playerId]
@@ -29,18 +29,24 @@ export default function createGraphics(forum, document, game, playerId, requestA
             updateScoreboard()
         },
         remove_player(command) {
-            scoreboardData = scoreboardData.filter( (player) => {
+            scoreboardData = scoreboardData.filter((player) => {
                 return player.id != command.playerId
             })
             updateScoreboard()
         },
         player_scored(command) {
-            scoreboardData.forEach( (player) => {
+            scoreboardData.forEach((player) => {
                 if (player.id == command.playerId) {
                     player.score = command.new_score
                 }
             })
             updateScoreboard()
+        },
+        admin_granted(command) {
+            // Atualiza a interface
+            admin_section.getElementsByTagName('h1')[0].removeAttribute('hidden')
+            const container = document.getElementById('admin_passcode_container')
+            if (container) container.remove()
         }
     }
     const notifyForum = forum.subscribe('graphics', respondsTo)
@@ -48,12 +54,12 @@ export default function createGraphics(forum, document, game, playerId, requestA
 
     const context = screen.getContext('2d')
     let scoreboardData = []
-    
+
     function renderScreen() {
         // clear screen
         context.fillStyle = 'white'
         context.clearRect(0, 0, screen.width, screen.height)
-        
+
         // render players and fruits
         for (const playerId in game.state.players) {
             const player = game.state.players[playerId]
@@ -65,32 +71,32 @@ export default function createGraphics(forum, document, game, playerId, requestA
             context.fillStyle = 'limegreen'
             context.fillRect(fruit.x, fruit.y, 1, 1)
         }
-        
+
         // printing player in yellow
         const currentPlayer = game.state.players[playerId]
-        if(currentPlayer) {
+        if (currentPlayer) {
             context.fillStyle = '#F0DB4F'
             context.fillRect(currentPlayer.x, currentPlayer.y, 1, 1)
         }
-        
+
         // mantem a tela se atualizando, sincronizada com o navegador e de maneira otimizada
-        requestAnimationFrame( () => {
+        requestAnimationFrame(() => {
             renderScreen()
         })
     }
 
     function updateScoreboard() {
         // Ordena a lista de jogadores por pontuação
-        const playerScores = scoreboardData.sort( (player1, player2) => {
+        const playerScores = scoreboardData.sort((player1, player2) => {
             return player2.score - player1.score
         })
 
         let new_html = ''
-        playerScores.forEach( (player, rank) => {
+        playerScores.forEach((player, rank) => {
             if (player.id === playerId) {
-                new_html += `<tr class="active"><td>${rank+1}</td><td>${player.id}</td><td>${player.score}</td></tr>`
+                new_html += `<tr class="active"><td>${rank + 1}</td><td>${player.id}</td><td>${player.score}</td></tr>`
             } else {
-                new_html += `<tr><td>${rank+1}</td><td>${player.id}</td><td>${player.score}</td></tr>`
+                new_html += `<tr><td>${rank + 1}</td><td>${player.id}</td><td>${player.score}</td></tr>`
             }
         })
 

@@ -1,7 +1,6 @@
 import express from 'express'
 import http from 'http'
 import path from 'path'
-import fs from 'fs'
 import createGame from './public/game.js'
 import socketio from 'socket.io'
 import createForum from './public/integration.js'
@@ -29,7 +28,7 @@ const propagate_events = [
 const propagate_admin_events = [
     'new_fruit_limit',
     'new_fruit_spawnFrequency',
-    'new_fruit_spawn'
+    'new_fruit_spawning'
 ]
 // Senha para acesso como administrador
 const passcode = 135
@@ -64,16 +63,9 @@ sockets.on('connection', (socket) => {
         }
         if (message.passcode == passcode) {
             console.log(`[server]> Passcode is correct. Granting admin access to player ${playerId}`)
-            // Lê o arquivo que contém as funções de admin
-            fs.readFile('admin.html', (error, data) => {
-                if (error) {
-                    console.log('[server]> ERROR: Failed to load admin file!')
-                } else {
-                    socket.emit('access_granted', { data })
-                    admin = true
-                    enableAdminPrivilege(socket, playerId)
-                }
-            })
+            socket.emit('access_granted')
+            admin = true
+            enableAdminPrivilege(socket, playerId)
         } else {
             socket.emit('access_denied')
             console.log(`[server]> Passcode is incorrect. Admin access denied to player ${playerId}`)

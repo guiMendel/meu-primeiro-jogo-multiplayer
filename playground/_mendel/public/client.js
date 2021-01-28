@@ -27,13 +27,13 @@ export default function createClient(document) {
         'player_scored',
         'new_fruit_limit',
         'new_fruit_spawnFrequency',
-        'new_fruit_spawn'
+        'new_fruit_spawning'
     ]
     // Define quais mensagens recebidas pelo forum devem ser transmitidas ao servidor
     const transmit_to_server = [
         'new_fruit_limit',
         'new_fruit_spawnFrequency',
-        'new_fruit_spawn'
+        'new_fruit_spawning'
     ]
 
     const respondsTo = {
@@ -101,9 +101,10 @@ export default function createClient(document) {
 
         }
         console.log('[network]> Admin access granted!')
+        notifyForum({
+            type: 'admin_granted'
+        })
         // Traduz o html recebido para texto normal
-        const decoder = new TextDecoder()
-        admin_section.innerHTML = decoder.decode(message.data)
         // Ativa a função de administrador
         admin = createAdmin({
             forum,
