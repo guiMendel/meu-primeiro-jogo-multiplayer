@@ -95,6 +95,8 @@ export default function createAdmin(app) {
         const field = document.createElement('div')
         field.classList.add('form-group')
 
+        section.appendChild(field)
+
         const label = document.createElement('label')
         const input = document.createElement('input')
 
@@ -110,9 +112,8 @@ export default function createAdmin(app) {
                 label.classList.add('form-check-label')
                 label.setAttribute('for', id)
 
-                section.appendChild(input)
-                section.appendChild(label)
-                section.appendChild(document.createElement('br'))
+                field.appendChild(label)
+                field.appendChild(input)
             },
             number() {
                 input.classList.add('form-control')
@@ -121,8 +122,8 @@ export default function createAdmin(app) {
 
                 label.setAttribute('for', id)
 
-                section.appendChild(label)
-                section.appendChild(input)
+                field.appendChild(label)
+                field.appendChild(input)
             },
         }
 

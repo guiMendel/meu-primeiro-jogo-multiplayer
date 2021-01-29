@@ -1,0 +1,33 @@
+#screen {
+    border: 10px solid #CCC;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    width: 600px;
+    height: 600px;
+}
+tr.active {
+    background-color: #ededed;
+}
+
+.form-group:not(#admin_passcode_container) {
+    display: flex;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.form-group:not(#admin_passcode_container) input[type=checkbox] {
+    position: static;
+    margin: 0;
+
+    height: 28px;
+    width: 28px;
+
+    outline: 1px solid rgb(136, 191, 251);
+}
+
+.form-group:not(#admin_passcode_container) label {
+    font-size: 20px;
+}
