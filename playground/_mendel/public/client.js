@@ -34,6 +34,7 @@ export default function createClient(document) {
     const transmit_to_server = [
         'new_fruit_limit',
         'new_fruit_spawnFrequency',
+        'new_fruit_moveFrequency',
         'new_fruit_spawning',
         'new_fruit_roamRate'
     ]

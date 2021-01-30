@@ -28,7 +28,9 @@ const propagate_events = [
 const propagate_admin_events = [
     'new_fruit_limit',
     'new_fruit_spawnFrequency',
-    'new_fruit_spawning'
+    'new_fruit_moveFrequency',
+    'new_fruit_spawning',
+    'new_fruit_roamRate'
 ]
 // Senha para acesso como administrador
 const passcode = 135

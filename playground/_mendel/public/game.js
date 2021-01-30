@@ -27,9 +27,17 @@ export default function createGame(forum, server_side = false) {
         new_fruit_spawnFrequency(command) {
             settings.fruit.spawnFrequency = command.value
             console.log('[game]> Fruit frequency value changed to ' + settings.fruit.spawnFrequency)
-            if (server_side) {
+            if (server_side && settings.fruit.spawning) {
                 spawnFruits()
             }
+        },
+        new_fruit_moveFrequency(command) {
+            settings.fruit.moveFrequency = command.value
+            console.log('[game]> Fruit move frequency value changed to ' + settings.fruit.moveFrequency)
+        },
+        new_fruit_roamRate(command) {
+            settings.fruit.roamRate = command.value
+            console.log('[game]> Fruit roam rate value changed to ' + settings.fruit.moveFrequency)
         },
         new_fruit_spawning(command) {
             if (server_side) {
@@ -222,7 +230,7 @@ export default function createGame(forum, server_side = false) {
     function move_fruit(command) {
         const fruit = state.fruits[command.fruitId]
         if (!fruit) {
-            error.log(`Fruit ${command.fruitId} is still trying to move even after being collected`)
+            console.log(`Fruit ${command.fruitId} is still trying to move even after being collected`)
             return
         }
         state.fruits[command.fruitId].x = command.x
@@ -248,7 +256,7 @@ export default function createGame(forum, server_side = false) {
             moveFunction(player)
             checkForFruitCollision(command.playerId)
         }
-        console.log(state.fruits)
+        // console.log(state.fruits)
     }
 
     function checkForFruitCollision(playerId) {
