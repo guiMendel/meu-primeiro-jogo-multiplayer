@@ -27,13 +27,15 @@ export default function createClient(document) {
         'player_scored',
         'new_fruit_limit',
         'new_fruit_spawnFrequency',
-        'new_fruit_spawning'
+        'new_fruit_spawning',
+        'move_fruit'
     ]
     // Define quais mensagens recebidas pelo forum devem ser transmitidas ao servidor
     const transmit_to_server = [
         'new_fruit_limit',
         'new_fruit_spawnFrequency',
-        'new_fruit_spawning'
+        'new_fruit_spawning',
+        'new_fruit_roamRate'
     ]
 
     const respondsTo = {
@@ -141,7 +143,7 @@ export default function createClient(document) {
     for (const event of propagate_to_forum) {
         // console.log(event)
         socket.on(event, (command) => {
-            // console.log(`[network]> Propagating event ${event}`)
+            console.log(`[network]> Propagating event ${event}`)
             if (!command.sourceId || command.sourceId !== playerId) {
                 notifyForum(command)
             }

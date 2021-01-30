@@ -48,7 +48,8 @@ export default function createGame(forum, server_side = false) {
         add_player,
         remove_player,
         add_fruit,
-        remove_fruit
+        remove_fruit,
+        move_fruit
     }
     const notifyForum = forum.subscribe('game', respondsTo)
     // console.log('[game]> Succesfully subscribed to forum')
@@ -77,9 +78,10 @@ export default function createGame(forum, server_side = false) {
         fruit: {
             spawning: true,
             value: 10,
-            limit: 30,
+            limit: 1,
             moveFrequency: 500,
             spawnFrequency: 2000,
+            roamRate: 0.5,
         },
         _screen: {
             width: 15,
@@ -190,7 +192,14 @@ export default function createGame(forum, server_side = false) {
 
         // console.log(`[game]> Adding fruit ${fruitId} at x:${fruitX} y:${fruitY}`)
 
-        state.fruits[fruitId] = createFruit(fruitId, fruitX, fruitY, forum, server_side)
+        state.fruits[fruitId] = createFruit({
+            fruit: {
+                id: fruitId, x: fruitX, y: fruitY,
+            },
+            app: {
+                forum, server_side, settings, state
+            }
+        })
 
         notifyForum({
             type: 'add_fruit',
@@ -208,6 +217,16 @@ export default function createGame(forum, server_side = false) {
             type: 'remove_fruit',
             fruitId
         })
+    }
+
+    function move_fruit(command) {
+        const fruit = state.fruits[command.fruitId]
+        if (!fruit) {
+            error.log(`Fruit ${command.fruitId} is still trying to move even after being collected`)
+            return
+        }
+        state.fruits[command.fruitId].x = command.x
+        state.fruits[command.fruitId].y = command.y
     }
 
     function spawnFruits() {
@@ -229,6 +248,7 @@ export default function createGame(forum, server_side = false) {
             moveFunction(player)
             checkForFruitCollision(command.playerId)
         }
+        console.log(state.fruits)
     }
 
     function checkForFruitCollision(playerId) {
