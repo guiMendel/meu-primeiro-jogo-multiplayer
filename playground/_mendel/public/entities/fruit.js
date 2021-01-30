@@ -6,7 +6,7 @@ export default function createFruit({ fruit: { id, x, y }, app: { forum, server_
     // Ainda não recebe mensagens pelo forum, portanto, passa um objeto vazio
     const respondsTo = {
         remove_fruit(command) {
-            if (id == command.fruitId) {
+            if (id == command.id) {
                 forum.unsubscribe(`fruit_${id}`, true)
                 clearInterval(spawnId)
             }
@@ -38,35 +38,36 @@ export default function createFruit({ fruit: { id, x, y }, app: { forum, server_
         return [innerDistance, outerDistance]
     }
 
-    function move() {
-        // console.log(`before> x: ${x}, y: ${y}`)
-        const moveFunctions = [
-            () => {
-                y = (settings._screen.height + y - 1) % settings._screen.height
-            },
-            () => {
-                y = (y + 1) % settings._screen.height
-            },
-            () => {
-                x = (settings._screen.width + x - 1) % settings._screen.width
-            },
-            () => {
-                x = (x + 1) % settings._screen.width
+    function randomMove() {
+        let tries = 5
+        // Tenta 5 vezes escolher uma direcao nao ocupada
+        while (tries > 0) {
+            // Move aleatoriamente
+            const way = Math.floor(Math.random() * 4)
+            try {
+                state.move('fruits', id, way)
+                tries = 0
             }
-        ]
+            catch {
+                tries--
+            }
+        }
+    }
+
+    function move() {
         // Chance de se mover aleatoriamente (ou se nao houver jogadores)
         if (Math.random() < settings.fruit.roamRate || Object.keys(state.players).length === 0 && state.players.constructor === Object) {
-            // Move aleatoriamente
-            const direction = Math.floor(Math.random() * 4)
-            moveFunctions[direction]()
+            randomMove()
         }
         else {
+
             // Encontra as coordenadas do jogador mais próximo
             let spookyX = 0
             let spookyY = 0
             let spookyDistance = 9999
             let distancesX
             let distancesY
+
             for (const player of Object.values(state.players)) {
                 distancesX = distance(player.x, x, settings._screen.width)
                 distancesY = distance(player.y, y, settings._screen.height)
@@ -81,31 +82,39 @@ export default function createFruit({ fruit: { id, x, y }, app: { forum, server_
                 }
             }
             // console.log(`Distances: x>${distance(spookyX, x, settings._screen.width)} y>${distance(spookyY, y, settings._screen.height)}\nPlayer: distance>${spookyDistance} x>${spookyX} y> ${spookyY}\nFruit: x>${x} y>${y}`)
-            // Encontra o eixo de prioridade
-            if (Math.min(...distancesX) < Math.min(...distancesY)) {
-                // COLOCAR PARA ELE IR PARA A DIRECAO QUE MAXIMIZA A DISTANCIA
-                if (
-                    // Esta a direita e a distancia interna eh menor
-                    x >= spookyX && distancesX[0] <= distancesX[1] ||
-                    // Esta a esquerda e a distancia externa eh menor
-                    x <= spookyX && distancesX[0] >= distancesX[1]
-                ) moveFunctions[3]()
-                else moveFunctions[2]()
+            try {
+                // Encontra o eixo de prioridade
+                if (Math.min(...distancesX) < Math.min(...distancesY)) {
+                    if (
+                        // Esta a direita e a distancia interna eh menor
+                        x >= spookyX && distancesX[0] <= distancesX[1] ||
+                        // Esta a esquerda e a distancia externa eh menor
+                        x <= spookyX && distancesX[0] >= distancesX[1]
+                    ) state.move('fruits', id, 'right')
+                    else state.move('fruits', id, 'left')
+                }
+                else {
+                    if (// Esta a baixo e a distancia interna eh menor
+                        y >= spookyY && distancesY[0] <= distancesY[1] ||
+                        // Esta a cima e a distancia externa eh menor
+                        y <= spookyY && distancesY[0] >= distancesY[1]
+                    ) state.move('fruits', id, 'down')
+                    else state.move('fruits', id, 'up')
+                }
+                // console.log(`after> x: ${x}, y: ${y}`)
             }
-            else {
-                if (// Esta a baixo e a distancia interna eh menor
-                    y >= spookyY && distancesY[0] <= distancesY[1] ||
-                    // Esta a cima e a distancia externa eh menor
-                    y <= spookyY && distancesY[0] >= distancesY[1]
-                ) moveFunctions[1]()
-                else moveFunctions[0]()
+            catch {
+                randomMove()
             }
         }
-        // console.log(`after> x: ${x}, y: ${y}`)
+
+        [x, y] = [state.fruits[id].x, state.fruits[id].y]
+
+        // console.log([x, y, id])
 
         notifyForum({
             type: 'move_fruit',
-            fruitId: id,
+            id: id,
             x,
             y
         })

@@ -3,7 +3,7 @@
 export default function createKeyboardListener(forum, document) {
     // Ainda não recebe mensagens pelo forum, portanto, passa um objeto vazio
     const notifyForum = forum.subscribe('input', {})
-    let playerId = null
+    let id = null
     
     // document é um objeto que implementa EventListener. Essa interface garante um método que permite que ela anuncie objetos do tipo evento. O primeiro argumento especifica qual tipo de evento nós estamos esperando, e o segundo ou um outro objeto que tb implemente EventListener ou uma função.
     document.addEventListener('keydown', handleKeyDown)
@@ -11,21 +11,21 @@ export default function createKeyboardListener(forum, document) {
     function handleKeyDown(event) {
         const keyPressed = event.key
     
-        // console.log(playerId)
+        // console.log(id)
         notifyForum({
             type: 'move_player',
-            playerId: playerId,
+            id: id,
             keyPressed
         })
     }
 
-    function registerPlayerId(receivedId) {
-        playerId = receivedId
-        // console.log('registered ' + playerId)
+    function registerid(receivedId) {
+        id = receivedId
+        // console.log('registered ' + id)
     }
     
 
     return {
-        registerPlayerId
+        registerid
     }
 }

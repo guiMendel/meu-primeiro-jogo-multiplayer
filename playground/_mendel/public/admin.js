@@ -8,7 +8,7 @@ export default function createAdmin(app) {
         setup_game(command) {
             Object.assign(app.state, command.new_state)
             Object.assign(app.settings, command.new_settings)
-            console.log(app)
+            // console.log(app)
             updateFields()
         },
         new_fruit_limit(command) {
@@ -29,9 +29,15 @@ export default function createAdmin(app) {
 
 
     function linkDefinitions() {
+        // Tira os elementos ja presentes
+        for (const field of Object.keys(settingsFields)) {
+            console.log(settingsFields[field])
+            settingsFields[field].remove()
+            delete settingsFields[field]
+        }
         // Pega os elementos do documento especificados pela lista, armazena eles e cria um listener para o evento 'change'
         const settingsList = assembleSettingsList(app.settings)
-        console.log(settingsList)
+        // console.log(settingsList)
         for (const setting of settingsList) {
 
             const element = drawAdminField(setting)
@@ -78,7 +84,7 @@ export default function createAdmin(app) {
             if (path !== '') path = path + '_'
 
             let list = []
-            console.log(value)
+            // console.log(value)
             for (const key of Object.keys(value)) {
                 // Por convencao, configuracoes que comecam com underscore nao devem ser alteraveis e nao aparecem na lista
                 if (key[0] == '_') continue

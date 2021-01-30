@@ -1,6 +1,6 @@
 // camada de apresentação
 // Implementação do padrão de design: Dependency Injection
-export default function createGraphics(forum, document, game, playerId, requestAnimationFrame) {
+export default function createGraphics(forum, document, game, id, requestAnimationFrame) {
     const screen = document.getElementById('screen')
     const scoreboard = document.getElementById('scoreboard')
     // Inscrição no forum
@@ -10,10 +10,10 @@ export default function createGraphics(forum, document, game, playerId, requestA
             screen.width = command.new_settings._screen.width
             screen.height = command.new_settings._screen.height
             // Adiciona a lista de pontuação
-            for (const playerId in command.new_state.players) {
-                const player = command.new_state.players[playerId]
+            for (const id in command.new_state.players) {
+                const player = command.new_state.players[id]
                 scoreboardData.push({
-                    id: playerId,
+                    id: id,
                     score: player.score
                 })
             }
@@ -23,20 +23,20 @@ export default function createGraphics(forum, document, game, playerId, requestA
             // console.log('[graphics]> Recording new player')
             // console.log(command)
             scoreboardData.push({
-                id: command.playerId,
+                id: command.id,
                 score: 0
             })
             updateScoreboard()
         },
         remove_player(command) {
             scoreboardData = scoreboardData.filter((player) => {
-                return player.id != command.playerId
+                return player.id != command.id
             })
             updateScoreboard()
         },
         player_scored(command) {
             scoreboardData.forEach((player) => {
-                if (player.id == command.playerId) {
+                if (player.id == command.id) {
                     player.score = command.new_score
                 }
             })
@@ -61,19 +61,19 @@ export default function createGraphics(forum, document, game, playerId, requestA
         context.clearRect(0, 0, screen.width, screen.height)
 
         // render players and fruits
-        for (const playerId in game.state.players) {
-            const player = game.state.players[playerId]
+        for (const id in game.state.players) {
+            const player = game.state.players[id]
             context.fillStyle = 'rgb(0,0,0,0.2)'
             context.fillRect(player.x, player.y, 1, 1)
         }
-        for (const fruitId in game.state.fruits) {
-            const fruit = game.state.fruits[fruitId]
+        for (const id in game.state.fruits) {
+            const fruit = game.state.fruits[id]
             context.fillStyle = 'limegreen'
             context.fillRect(fruit.x, fruit.y, 1, 1)
         }
 
         // printing player in yellow
-        const currentPlayer = game.state.players[playerId]
+        const currentPlayer = game.state.players[id]
         if (currentPlayer) {
             context.fillStyle = '#F0DB4F'
             context.fillRect(currentPlayer.x, currentPlayer.y, 1, 1)
@@ -93,7 +93,7 @@ export default function createGraphics(forum, document, game, playerId, requestA
 
         let new_html = ''
         playerScores.forEach((player, rank) => {
-            if (player.id === playerId) {
+            if (player.id === id) {
                 new_html += `<tr class="active"><td>${rank + 1}</td><td>${player.id}</td><td>${player.score}</td></tr>`
             } else {
                 new_html += `<tr><td>${rank + 1}</td><td>${player.id}</td><td>${player.score}</td></tr>`

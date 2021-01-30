@@ -38,46 +38,46 @@ const passcode = 135
 // Implementação do padrão de projeto: Event Emmiter
 sockets.on('connection', (socket) => {
     socket.emit('setup', { state: game.state, settings: game.settings })
-    const playerId = socket.id
+    const id = socket.id
     let admin = false
-    console.log(`[server]> Player connected with id: ${playerId}`)
+    console.log(`[server]> Player connected with id: ${id}`)
 
-    notifyForum({ type: 'add_player', playerId })
-    // game.addPlayer( {playerId: playerId} )
+    notifyForum({ type: 'add_player', id })
+    // game.addPlayer( {id: id} )
     // console.log(game.state)
 
     socket.on('disconnect', (socket) => {
         notifyForum({
             type: 'remove_player',
-            playerId
+            id
         })
-        console.log(`[server]> Player disconnected: ${playerId}`)
+        console.log(`[server]> Player disconnected: ${id}`)
     })
 
     // Espera pela tentativa de acesso do administrador
     socket.on('access_request', (message) => {
-        console.log(`[server]> Player ${playerId} requesting admin access...`)
+        console.log(`[server]> Player ${id} requesting admin access...`)
         // Ve se ja e admin
         if (admin) {
             socket.emit('access_granted')
-            console.log(`[server]> Player ${playerId} is already an admin`)
+            console.log(`[server]> Player ${id} is already an admin`)
             return
         }
         if (message.passcode == passcode) {
-            console.log(`[server]> Passcode is correct. Granting admin access to player ${playerId}`)
+            console.log(`[server]> Passcode is correct. Granting admin access to player ${id}`)
             socket.emit('access_granted')
             admin = true
-            enableAdminPrivilege(socket, playerId)
+            enableAdminPrivilege(socket, id)
         } else {
             socket.emit('access_denied')
-            console.log(`[server]> Passcode is incorrect. Admin access denied to player ${playerId}`)
+            console.log(`[server]> Passcode is incorrect. Admin access denied to player ${id}`)
         }
     })
     // 
     for (const event of propagate_events) {
         // console.log(event)
         socket.on(event, (command) => {
-            command.playerId = playerId
+            command.id = id
             command.type = event
 
             // Notifica os outros jogadores deste evento
@@ -93,11 +93,11 @@ server.listen(3000, () => {
     console.log('[server]> Server listening on port: 3000')
 })
 
-function enableAdminPrivilege(socket, playerId) {
+function enableAdminPrivilege(socket, id) {
     // Permite que o usuário propague eventos de administrador
     for (const event of propagate_admin_events) {
         socket.on(event, (command) => {
-            command.playerId = playerId
+            command.id = id
             command.type = event
 
             // Notifica os outros jogadores deste evento

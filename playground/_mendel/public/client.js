@@ -13,7 +13,7 @@ export default function createClient(document) {
     const keyboardListener = createKeyboardListener(forum, document)
     // camada de rede
     const socket = io()
-    let playerId
+    let id
     // camada apresentação
     let graphics
 
@@ -44,7 +44,7 @@ export default function createClient(document) {
         move_player(command) {
             if (command.keyPressed in game.acceptedMoves) {
                 // Utilizado para evitar repetir o comando com o retorno do servidor
-                command['sourceId'] = playerId
+                command['sourceId'] = id
                 // console.log('[network]> Emmiting command to server')
                 socket.emit(command.type, command)
             }
@@ -54,7 +54,7 @@ export default function createClient(document) {
     for (const message of transmit_to_server) {
         respondsTo[message] = (command) => {
             // console.log(`[network]> Emmiting command ${message} to server`)
-            command['sourceId'] = playerId
+            command['sourceId'] = id
             socket.emit(command.type, command)
         }
     }
@@ -63,15 +63,15 @@ export default function createClient(document) {
     // console.log('[network]> Succesfully subscribed to forum')
 
     socket.on('connect', () => {
-        playerId = socket.id
-        console.log(`[network]> Player connected to Client with id: ${playerId}`)
+        id = socket.id
+        console.log(`[network]> Player connected to Client with id: ${id}`)
     })
 
     socket.on('setup', (setup) => {
         console.log(`[network]> Receiving "setup" from server...`)
-        console.log(setup)
-        keyboardListener.registerPlayerId(playerId)
-        graphics = createGraphics(forum, document, game, playerId, requestAnimationFrame)
+        // console.log(setup)
+        keyboardListener.registerid(id)
+        graphics = createGraphics(forum, document, game, id, requestAnimationFrame)
         graphics.renderScreen()
         // Propaga a mensagem pelo forum
         notifyForum({
@@ -116,24 +116,9 @@ export default function createClient(document) {
         })
 
         // Quando desconectar, reseta a pagina
-        let reconnecting = false
         socket.on('disconnect', () => {
-            if (reconnecting) return
-            reconnecting = true
-            console.log('[network]> Reconnecting...')
-            alert('Server restarted.\nRequesting admin with same passcode...')
-
-            socket.emit('access_request', {
-                type: 'access_request',
-                passcode: adminPasscode
-            })
-            socket.on('access_denied', () => {
-                console.log('[network]> Admin access denied!')
-                location.reload()
-            })
-
-            reconnecting = false
-
+            alert('Server restarted.\nResetting page')
+            location.reload()
         })
 
     })
@@ -145,7 +130,7 @@ export default function createClient(document) {
         // console.log(event)
         socket.on(event, (command) => {
             console.log(`[network]> Propagating event ${event}`)
-            if (!command.sourceId || command.sourceId !== playerId) {
+            if (!command.sourceId || command.sourceId !== id) {
                 notifyForum(command)
             }
         })
