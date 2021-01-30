@@ -1,7 +1,6 @@
 export default function createAdmin(app) {
     // Define as operações do administrador, como descritas na configuracao do jogo
     const settingsFields = {}
-    linkDefinitions()
 
     // Se inscreve no forum
     const respondsTo = {
@@ -10,22 +9,10 @@ export default function createAdmin(app) {
             Object.assign(app.settings, command.new_settings)
             // console.log(app)
             updateFields()
-        },
-        new_fruit_limit(command) {
-            app.settings.fruit.limit = command.value
-            updateFields()
-        },
-        new_fruit_spawnFrequency(command) {
-            app.settings.fruit.frequency = command.value
-            updateFields()
-        },
-        new_fruit_spawning(command) {
-            app.state.fruit.spawnFrequency = command.value
-            updateFields()
-
         }
     }
-    const notifyForum = app.forum.subscribe('admin', respondsTo)
+    let notifyForum
+    linkDefinitions()
 
 
     function linkDefinitions() {
@@ -35,10 +22,17 @@ export default function createAdmin(app) {
             settingsFields[field].remove()
             delete settingsFields[field]
         }
-        // Pega os elementos do documento especificados pela lista, armazena eles e cria um listener para o evento 'change'
-        const settingsList = assembleSettingsList(app.settings)
-        // console.log(settingsList)
-        for (const setting of settingsList) {
+        // Se inscreve no forum com essas configuracoes
+        for (const setting of app.settingsList) {
+            respondsTo['new_' + setting] = (command) => {
+                console.log(setting)
+                app.settings.fruit[setting] = command.value
+                updateFields()
+            }
+        }
+        notifyForum = app.forum.subscribe('admin', respondsTo)
+        // console.log(app.settingsList)
+        for (const setting of app.settingsList) {
 
             const element = drawAdminField(setting)
             settingsFields[setting] = element
@@ -72,27 +66,6 @@ export default function createAdmin(app) {
                 element.value = app.settings.get(definition) ?? app.state[definition]
             }
         }
-    }
-
-    // Funcao que cria a lista de campos alteraveis pelo admin a partir das configuracoes do jogo
-    function assembleSettingsList(value, path = '') {
-        // Descarta se for uma funcao
-        if (typeof value === 'function') return []
-        // Continua a recursao se for outro objeto
-        if (typeof value === 'object' && value !== null) {
-            // Adiciona underscore entre os campos
-            if (path !== '') path = path + '_'
-
-            let list = []
-            // console.log(value)
-            for (const key of Object.keys(value)) {
-                // Por convencao, configuracoes que comecam com underscore nao devem ser alteraveis e nao aparecem na lista
-                if (key[0] == '_') continue
-                list = list.concat(assembleSettingsList(value[key], path + key))
-            }
-            return list
-        }
-        return [path]
     }
 
     function drawAdminField(id) {

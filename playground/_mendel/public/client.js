@@ -25,19 +25,16 @@ export default function createClient(document) {
         'add_fruit',
         'remove_fruit',
         'player_scored',
-        'new_fruit_limit',
-        'new_fruit_spawnFrequency',
-        'new_fruit_spawning',
         'move_fruit'
     ]
-    // Define quais mensagens recebidas pelo forum devem ser transmitidas ao servidor
-    const transmit_to_server = [
-        'new_fruit_limit',
-        'new_fruit_spawnFrequency',
-        'new_fruit_moveFrequency',
-        'new_fruit_spawning',
-        'new_fruit_roamRate'
-    ]
+    for (const event of propagate_to_forum) {
+        // Transmite do servidor para os amiguinhos locais
+        socket.on(event, (command) => {
+            if (!command.sourceId || command.sourceId !== id) {
+                notifyForum(command)
+            }
+        })
+    }
 
     const respondsTo = {
         // Envia o movimento para o servidor
@@ -50,17 +47,48 @@ export default function createClient(document) {
             }
         }
     }
-    // Adiciona as transmissões definidas pela lista
-    for (const message of transmit_to_server) {
-        respondsTo[message] = (command) => {
-            // console.log(`[network]> Emmiting command ${message} to server`)
+
+    // Funcao que cria a lista de campos alteraveis pelo admin a partir das configuracoes do jogo
+    function assembleSettingsList(value, path = '') {
+        // Descarta se for uma funcao
+        if (typeof value === 'function') return []
+        // Continua a recursao se for outro objeto
+        if (typeof value === 'object' && value !== null) {
+            // Adiciona underscore entre os campos
+            if (path !== '') path = path + '_'
+
+            let list = []
+            // console.log(value)
+            for (const key of Object.keys(value)) {
+                // Por convencao, configuracoes que comecam com underscore nao devem ser alteraveis e nao aparecem na lista
+                if (key[0] == '_') continue
+                list = list.concat(assembleSettingsList(value[key], path + key))
+            }
+            return list
+        }
+        return [path]
+    }
+
+    const adminPowers = assembleSettingsList(game.settings)
+
+    // Se prepara para propagar os comandos de admin
+    for (const setting of adminPowers) {
+        // Transmite para o servidor
+        respondsTo['new_' + setting] = (command) => {
+            // console.log(`[network]> Emmiting command ${setting} to server`)
             command['sourceId'] = id
             socket.emit(command.type, command)
         }
+        // Transmite do servidor para os amiguinhos locais
+        socket.on('new_' + setting, (command) => {
+            console.log(`[network]> Propagating new setting ${setting}`)
+            if (!command.sourceId || command.sourceId !== id) {
+                notifyForum(command)
+            }
+        })
     }
-    // console.log(respondsTo)
+
     const notifyForum = forum.subscribe('network', respondsTo)
-    // console.log('[network]> Succesfully subscribed to forum')
 
     socket.on('connect', () => {
         id = socket.id
@@ -112,7 +140,8 @@ export default function createClient(document) {
         admin = createAdmin({
             forum,
             state: game.state,
-            settings: game.settings
+            settings: game.settings,
+            settingsList: adminPowers
         })
 
         // Quando desconectar, reseta a pagina
@@ -125,14 +154,4 @@ export default function createClient(document) {
     socket.on('access_denied', () => {
         console.log('[network]> Admin access denied!')
     })
-
-    for (const event of propagate_to_forum) {
-        // console.log(event)
-        socket.on(event, (command) => {
-            console.log(`[network]> Propagating event ${event}`)
-            if (!command.sourceId || command.sourceId !== id) {
-                notifyForum(command)
-            }
-        })
-    }
 }
