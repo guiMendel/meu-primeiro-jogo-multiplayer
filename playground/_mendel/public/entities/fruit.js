@@ -45,7 +45,7 @@ export default function createFruit({ fruit: { id, x, y }, app: { forum, server_
             // Move aleatoriamente
             const way = Math.floor(Math.random() * 4)
             try {
-                state.move('fruits', id, way)
+                state.move('fruits', id, way, null, false)
                 tries = 0
             }
             catch {
@@ -90,16 +90,16 @@ export default function createFruit({ fruit: { id, x, y }, app: { forum, server_
                         x >= spookyX && distancesX[0] <= distancesX[1] ||
                         // Esta a esquerda e a distancia externa eh menor
                         x <= spookyX && distancesX[0] >= distancesX[1]
-                    ) state.move('fruits', id, 'right')
-                    else state.move('fruits', id, 'left')
+                    ) state.move('fruits', id, 'right', null, false)
+                    else state.move('fruits', id, 'left', null, false)
                 }
                 else {
                     if (// Esta a baixo e a distancia interna eh menor
                         y >= spookyY && distancesY[0] <= distancesY[1] ||
                         // Esta a cima e a distancia externa eh menor
                         y <= spookyY && distancesY[0] >= distancesY[1]
-                    ) state.move('fruits', id, 'down')
-                    else state.move('fruits', id, 'up')
+                    ) state.move('fruits', id, 'down', null, false)
+                    else state.move('fruits', id, 'up', null, false)
                 }
                 // console.log(`after> x: ${x}, y: ${y}`)
             }

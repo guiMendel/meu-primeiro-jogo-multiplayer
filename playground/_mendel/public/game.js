@@ -90,7 +90,7 @@ export default function createGame(forum, server_side = false) {
                 id
             }
         },
-        move(type, id, way, onCollide) {
+        move(type, id, way, onCollide, wrap = true) {
             // console.log(this.coords)
             // Por padrao, colisoes lancam excecoes, impedindo o movimento
             if (!onCollide) {
@@ -119,6 +119,10 @@ export default function createGame(forum, server_side = false) {
             const moveFunctions = [
                 // up
                 () => {
+                    // Verifica se pode dar wrap
+                    if (!wrap && entity.y == 0) throw {
+                        error: "Wrapping not allowed"
+                    }
                     const moveResult = (settings._screen.height + entity.y - 1) % settings._screen.height
                     // Verifica por colisao
                     const collisionTarget = this.coords[[entity.x, moveResult]]
@@ -128,6 +132,10 @@ export default function createGame(forum, server_side = false) {
                 },
                 // down
                 () => {
+                    // Verifica se pode dar wrap
+                    if (!wrap && entity.y == settings._screen.height - 1) throw {
+                        error: "Wrapping not allowed"
+                    }
                     const moveResult = (entity.y + 1) % settings._screen.height
                     // Verifica por colisao
                     const collisionTarget = this.coords[[entity.x, moveResult]]
@@ -137,6 +145,10 @@ export default function createGame(forum, server_side = false) {
                 },
                 // left
                 () => {
+                    // Verifica se pode dar wrap
+                    if (!wrap && entity.x == 0) throw {
+                        error: "Wrapping not allowed"
+                    }
                     const moveResult = (settings._screen.width + entity.x - 1) % settings._screen.width
                     // Verifica por colisao
                     const collisionTarget = this.coords[[moveResult, entity.y]]
@@ -146,6 +158,10 @@ export default function createGame(forum, server_side = false) {
                 },
                 // right
                 () => {
+                    // Verifica se pode dar wrap
+                    if (!wrap && entity.x == settings._screen.width - 1) throw {
+                        error: "Wrapping not allowed"
+                    }
                     const moveResult = (entity.x + 1) % settings._screen.width
                     // Verifica por colisao
                     const collisionTarget = this.coords[[moveResult, entity.y]]
